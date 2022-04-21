@@ -19,9 +19,12 @@ CARD_SIZE = 60  # height and width of cards, in pixels
 MARGIN = 10  # space in between cards, in pixels
 PAUSE = 0.5  # default time (in seconds) to wait between things
 
-parser = argparse.ArgumentParser(description="Play a Game of Thrones: Hand of the King!")
-parser.add_argument('--player1', metavar='p1', type=str, help="either human or the name of an AI file", default='human')
-parser.add_argument('--player2', metavar='p2', type=str, help="either human or the name of an AI file", default='human')
+parser = argparse.ArgumentParser(
+    description="Play a Game of Thrones: Hand of the King!")
+parser.add_argument('--player1', metavar='p1', type=str,
+                    help="either human or the name of an AI file", default='human')
+parser.add_argument('--player2', metavar='p2', type=str,
+                    help="either human or the name of an AI file", default='human')
 
 
 def main(args):
@@ -29,10 +32,13 @@ def main(args):
 
     # Initialize the game
     board = shufflecards()  # shuffle the cards to make a board array
-    x0 =  board.index(1)  # starting position of the 1-card (which will be needed as a workaround for actually swapping graphics objects)
+    # starting position of the 1-card (which will be needed as a workaround for actually swapping graphics objects)
+    x0 = board.index(1)
     gui = gamesetup(board)  # make the gui
-    cards = [[0] * (COLORS - 1) for i in range(2)]  # initialize card collection for each player
-    banners = [[0] * (COLORS - 1) for i in range(2)]  # initialize banner collection for each player
+    # initialize card collection for each player
+    cards = [[0] * (COLORS - 1) for i in range(2)]
+    # initialize banner collection for each player
+    banners = [[0] * (COLORS - 1) for i in range(2)]
 
     # Load AI player(s) if needed
     players = [args.player1, args.player2]
@@ -42,16 +48,20 @@ def main(args):
             print(f"Loading Player {i + 1} AI ({players[i]})...", end="")
             try:
                 pathname, filename = os.path.split(os.path.abspath(players[i]))
-                filename = ''.join(filename.split('.')[:-1])  # remove filename extension
+                # remove filename extension
+                filename = ''.join(filename.split('.')[:-1])
                 players[i] = filename  # simplify the player name for display
-                sys.path.append(pathname)  # add directory containing AI player to system path
+                # add directory containing AI player to system path
+                sys.path.append(pathname)
                 ai[i] = importlib.import_module(filename)
             except ImportError:
-                print(f"\n\tERROR: Cannot import AI player from file ({players[i]})")
+                print(
+                    f"\n\tERROR: Cannot import AI player from file ({players[i]})")
                 return 0
 
             if not hasattr(ai[i], 'get_computer_move'):
-                print(f"\n\tERROR: This AI player does not have a 'get_computer_move' function")
+                print(
+                    f"\n\tERROR: This AI player does not have a 'get_computer_move' function")
                 return 0
             print("done")
 
@@ -81,16 +91,19 @@ def main(args):
                 status(gui, f'Player {turn + 1}, choose a move')
                 # Check for mouse input
                 pt = gui.checkMouse()
+
                 if pt:
                     x, y = int(pt.getX()), int(pt.getY())
-                    row = max(0, min(ROWS - 1, (y - MARGIN // 2) // (CARD_SIZE + MARGIN)))
-                    col = max(0, min(COLS - 1, (x - MARGIN // 2) // (CARD_SIZE + MARGIN)))
+                    row = max(
+                        0, min(ROWS - 1, (y - MARGIN // 2) // (CARD_SIZE + MARGIN)))
+                    col = max(
+                        0, min(COLS - 1, (x - MARGIN // 2) // (CARD_SIZE + MARGIN)))
                     # print(f'(x,y)=({x},{y}), (row,col)=({row},{col})')
                     ind = COLS * row + col
             else:  # the player is an AI agent
                 status(gui, f'{players[turn]} is thinking...')
                 time.sleep(PAUSE)
-                ind = ai[turn].get_computer_move(board, cards, banners)
+                ind = ai[turn].get_computer_move(board, cards, banners, turn)
 
             # Make the move if it is valid
             if ind in validmoves:
@@ -103,12 +116,13 @@ def main(args):
 
                 # Check to see if current player should capture a banner
                 if cards[turn][color - 2] >= cards[abs(turn - 1)][color - 2]:
-                    banners[turn][color - 2] = 1  # add the banner to the player's collection
+                    # add the banner to the player's collection
+                    banners[turn][color - 2] = 1
                     banners[abs(turn - 1)][color - 2] = 0
-                
+
                 # Switch turns
                 turn = abs(turn - 1)
-                
+
                 # Stuff for debugging
                 print("card collections")
                 print(*cards[0])
@@ -138,7 +152,7 @@ def gamesetup(board):
     wid = COLS * CARD_SIZE + MARGIN * (COLS + 1)
     hei = ROWS * CARD_SIZE + MARGIN * (ROWS + 1) + 30
     gui = GraphWin("A Game of Thrones: Hand of the King", wid, hei)
-    
+
     # Create card graphics
     for row in range(ROWS):
         for col in range(COLS):
@@ -147,7 +161,8 @@ def gamesetup(board):
             x2 = x1 + CARD_SIZE
             y2 = y1 + CARD_SIZE
             card = Rectangle(Point(x1, y1), Point(x2, y2))
-            whichcolor = board[COLS * row + col]  # index of the color for the card in the current (row, col)
+            # index of the color for the card in the current (row, col)
+            whichcolor = board[COLS * row + col]
             # print(f'row={row}, col={col}, index={COLS * row + col}, color={whichcolor}')
             card.setFill(colors[whichcolor - 1][0])
             card.setOutline(colors[whichcolor - 1][1])
@@ -174,7 +189,8 @@ def getvalidmoves(board):
 
     # Check all directions for possible valid moves
     if row > 0:  # up
-        possible = [ind - COLS * (i + 1) for i in range(row) if board[ind - COLS * (i + 1)] != 0]
+        possible = [ind - COLS * (i + 1) for i in range(row)
+                    if board[ind - COLS * (i + 1)] != 0]
         possible.reverse()
         colors = []
         for i in possible:
@@ -182,7 +198,8 @@ def getvalidmoves(board):
                 moves.append(i)
                 colors.append(board[i])
     if row < ROWS - 1:  # down
-        possible = [ind + COLS * (i + 1) for i in range(ROWS - row - 1) if board[ind + COLS * (i + 1)] != 0]
+        possible = [ind + COLS * (i + 1) for i in range(ROWS - row - 1)
+                    if board[ind + COLS * (i + 1)] != 0]
         possible.reverse()
         colors = []
         for i in possible:
@@ -190,7 +207,8 @@ def getvalidmoves(board):
                 moves.append(i)
                 colors.append(board[i])
     if col > 0:  # left
-        possible = [ind - (i + 1) for i in range(col) if board[ind - (i + 1)] != 0]
+        possible = [ind - (i + 1)
+                    for i in range(col) if board[ind - (i + 1)] != 0]
         possible.reverse()
         colors = []
         for i in possible:
@@ -198,21 +216,22 @@ def getvalidmoves(board):
                 moves.append(i)
                 colors.append(board[i])
     if col < COLS - 1:  # right
-        possible = [ind + (i + 1) for i in range(COLS - col - 1) if board[ind + (i + 1)] != 0]
+        possible = [ind + (i + 1) for i in range(COLS - col - 1)
+                    if board[ind + (i + 1)] != 0]
         possible.reverse()
         colors = []
         for i in possible:
             if board[i] not in colors:
                 moves.append(i)
                 colors.append(board[i])
-    
+
     return moves
 
 
 def makemove(gui, board, x, x0, collection):
     '''Move the 1-card in the GUI to the position on the board specified by the input index, capturing
     cards of the same color along the way. Update the player's card collection accordingly.
-    
+
     Note that x0 is the intial position of the 1-card in the objects array, which we need to correctly move it around.'''
     # Get relevant data
     cards = gui.items[:-1]
@@ -249,7 +268,6 @@ def makemove(gui, board, x, x0, collection):
     # Move the 1-card to the correct position
     cards[x0].move(dx, dy)
     board[x1] = 0
-
 
 
 def shufflecards():
