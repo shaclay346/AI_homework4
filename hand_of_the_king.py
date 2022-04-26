@@ -78,7 +78,7 @@ def main(args):
                 winner = 'Player 1' if players[0] == 'human' or players[0] == players[1] else players[0]
                 status(gui, f"{winner} wins!")
             elif sum(banners[1]) > sum(banners[0]):
-                winner = 'Player 2' if players[0] == 'human' or players[0] == players[1] else players[0]
+                winner = 'Player 2' if players[1] == 'human' or players[0] == players[1] else players[1]
                 status(gui, f"{winner} wins!")
             else:
                 status(gui, "It's a tie!")
@@ -91,7 +91,6 @@ def main(args):
                 status(gui, f'Player {turn + 1}, choose a move')
                 # Check for mouse input
                 pt = gui.checkMouse()
-
                 if pt:
                     x, y = int(pt.getX()), int(pt.getY())
                     row = max(
@@ -107,12 +106,8 @@ def main(args):
 
             # Make the move if it is valid
             if ind in validmoves:
-                # print(f"choosing card {ind}")
-                # print(*board)
-                # print(*validmoves)
                 color = board[ind]  # save the color being captured for later
                 makemove(gui, board, ind, x0, cards[turn])
-                # print(*board)
 
                 # Check to see if current player should capture a banner
                 if cards[turn][color - 2] >= cards[abs(turn - 1)][color - 2]:
