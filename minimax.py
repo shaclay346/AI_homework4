@@ -1,30 +1,27 @@
 from random import randint
 from hand_of_the_king import getvalidmoves
 import pdb
+import math
 
-# method to createe a copy of the board, cards and banners lists
 
-
+# method to create a copy of the board, cards and banners lists
 def createCopies(board, cards, banners):
-    copy = []
+    copyBoard = []
 
     for i in range(len(board)):
-        copy.append(board[i])
+        copyBoard.append(board[i])
 
-    copyCards = []
     # copy the cards
-    for i in range(len(cards)):
-        copyCards.append(cards[i])
+    copyCards = deepcopy(cards)
 
-    copyBanners = []
     # copy the banners
-    for i in range(len(banners)):
-        copyBanners.append(banners[i])
+    copyBanners = deepcopy(banners)
 
-    return copy, copyCards, copyBanners
+    return copyBoard, copyCards, copyBanners
 
 
 def get_computer_move(board, cards, banners, turn):
+    # create copies of the boards, cards and banners
     result = createCopies(board, cards, banners)
 
     # this should be ok, since I'm overwriting
@@ -32,45 +29,49 @@ def get_computer_move(board, cards, banners, turn):
     board = result[0]
     cards = result[1]
     banners = result[2]
-    minimax(board, cards, bannners, player)
+    minimax(board, cards, banners, turn)
 
 
-def simulateMove(board, cards, banner, move, player):
+#x is move
+# collection is the 1d array that comes from the cards
+# this method makes the move for our simulation
+# and updates cards and banners
+def simulateMove(board, cards, banners, x, player):
     # so wherever the 1 card is and wherever it moves to, if anything at a position +-6 from where one card was to where it will go
     # needs to be set to 0
     # cards = gui.items[:-1]
+    collection = cards[player]
+    turn = player
+    # x0 = board.index(1)
     x1 = board.index(1)  # index of the 1-card on the board
     # print(f'moving from {x1} to {x}')
 
     # Remove captured cards from board
     # d = gui.width + 100  # distance to move cards
     color = board[x]  # color of the main captured card
-    cards[x].move(d, 0)
+    # cards[x].move(d, 0)
     board[x] = 1  # the 1-card moves here
     collection[color - 2] += 1
-    if abs(x - x1) < COLS:  # move is either left or right
-        dx = (x - x1) * (CARD_SIZE + MARGIN)
-        dy = 0
+    if abs(x - x1) < 6:  # move is either left or right
         if x < x1:  # left
             possible = range(x + 1, x1)
         else:  # right
             possible = range(x1 + 1, x)
     else:  # move is either up or down
-        dx = 0
-        dy = ((x - x1) // COLS) * (CARD_SIZE + MARGIN)
         if x < x1:  # up
-            possible = range(x + COLS, x1, COLS)
+            possible = range(x + 6, x1, 6)
         else:  # down
-            possible = range(x1 + COLS, x, COLS)
+            possible = range(x1 + 6, x, 6)
 
     for i in possible:
         if board[i] == color:
-            cards[i].move(d, 0)
+            # cards[i].move(d, 0)
             board[i] = 0  # there is no card in this position anymore
             collection[color - 2] += 1
 
     # Move the 1-card to the correct position
-    cards[x0].move(dx, dy)
+    # don't even know if I need this or not, or any of the dx, dy shit
+
     board[x1] = 0
 
     # Check to see if current player should capture a banner
@@ -80,7 +81,7 @@ def simulateMove(board, cards, banner, move, player):
         banners[abs(turn - 1)][color - 2] = 0
 
 
-def minimax(board, cards, bannners, player):
+def minimax(board, cards, banners, player):
     '''Returns the best move from a given state in the game for a specific player.'''
     result = createCopies(board, cards, banners)
     board = result[0]
@@ -90,9 +91,9 @@ def minimax(board, cards, bannners, player):
     moves = getvalidmoves(board)
     best = moves[0]
 
-    value = minvalue(board, cards, player, best)
+    value = minvalue(board, cards, banners, player, best)
     for move in moves[1:]:
-        v = minvalue(board, player, move)
+        v = minvalue(board, cards, banners, player, move)
         if v > value:
             best = move
             value = v
@@ -109,8 +110,8 @@ def minvalue(board, cards, banners, player, move):
     banners = result[2]
 
     # simulate the move on the copies of the game items
-    temp = simulateMove(board, cards, banner, move, player)
-    nextplayer = math.abs(player-1)
+    temp = simulateMove(board, cards, banners, move, player)
+    nextplayer = abs(player-1)
 
     # Check if we are in a terminal state
     moves = getvalidmoves(board)
@@ -133,8 +134,8 @@ def maxvalue(board, cards, banners, player, move):
     cards = result[1]
     banners = result[2]
 
-    simulateMove(board, cards, banner, move, player)
-    nextplayer = math.abs(player-1)
+    simulateMove(board, cards, banners, move, player)
+    nextplayer = abs(player-1)
 
     # Check if we are in a terminal state
     moves = getvalidmoves(board)

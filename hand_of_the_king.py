@@ -12,8 +12,11 @@ import pdb
 import random
 import time
 
-ROWS = 6
-COLS = 6
+# for testing purposes
+ROWS = 4
+COLS = 4
+
+
 COLORS = 8  # number of colors, 7 of which can be controlled
 CARD_SIZE = 60  # height and width of cards, in pixels
 MARGIN = 10  # space in between cards, in pixels
@@ -106,8 +109,12 @@ def main(args):
 
             # Make the move if it is valid
             if ind in validmoves:
+                # print(f"choosing card {ind}")
+                # print(*board)
+                # print(*validmoves)
                 color = board[ind]  # save the color being captured for later
                 makemove(gui, board, ind, x0, cards[turn])
+                # print(*board)
 
                 # Check to see if current player should capture a banner
                 if cards[turn][color - 2] >= cards[abs(turn - 1)][color - 2]:
@@ -223,6 +230,9 @@ def getvalidmoves(board):
     return moves
 
 
+# x is the move
+# x0 is the position of 1 card at very start of game
+# collection is the 1d array representing the cards of the current player
 def makemove(gui, board, x, x0, collection):
     '''Move the 1-card in the GUI to the position on the board specified by the input index, capturing
     cards of the same color along the way. Update the player's card collection accordingly.
